@@ -216,7 +216,7 @@ let game = {
     document.querySelector('.OutMoves').innerHTML = 'Moves: ' + game.moves;
 
     if (game.over()) {
-      alert('You win ' + game.fild.size + 'X' + game.fild.size + ' game with ' + game.moves + 'moves in ' + game.timer.time)
+      alert('You win ' + game.fild.size + 'X' + game.fild.size + ' game with ' + game.moves + ' moves in ' + game.time.time)
     }
   },
   over: function() {
