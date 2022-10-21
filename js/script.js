@@ -2,7 +2,7 @@ document.querySelector('body').innerHTML = "<div class='content'><div class='men
 document.querySelector('.menu').innerHTML = "<button class='shuffle'>SHUFFLE</button><button class='stop'>STOP</button><button class='save'>SAVE</button><button class='load'>LOAD</button><button class='results'>RESULTS</button>";
 document.querySelector('.info').innerHTML = "<div class='OutMoves'>Mooves: 0</div><div class='sound'></div><div class='OutTime'>Time: 00:00</div>";
 document.querySelector('.settings').innerHTML = "<button class='size' value = '3'>3X3</button><button class='size' value = '4'>4X4</button><button class='size' value = '5'>5X5</button><button class='size' value = '6'>6X6</button><button class='size' value = '7'>7X7</button><button class='size' value = '8'>8X8</button>";
-document.querySelector('.sound').innerHTML = "<img src='./assets/img/sound-off.png'>" 
+document.querySelector('.sound').innerHTML = "<img src='./assets/img/sound-off.png'>"
 
 
 
@@ -14,10 +14,10 @@ let game = {
   },
   sprites: {},
   sound: false,
-  fild:{
+  fild: {
     width: 300,
     height: 300,
-    size : 4,
+    size: 4,
     winResult: [],
     scheme: [],
   },
@@ -30,35 +30,35 @@ let game = {
   },
   moves: 0,
   time: {
-    s:0,
-    m:0,
+    s: 0,
+    m: 0,
     time: '00:00',
     stop: true,
-    start: function() {
+    start: function () {
       game.time.stop = false;
       let fuck = setInterval(tick, 1000);
-      function tick () {
+      function tick() {
         if (game.time.stop) {
           clearInterval(fuck);
         }
         game.time.s++;
-        if (game.time.s==60) {
+        if (game.time.s == 60) {
           game.time.m++;
           game.time.s = 0;
         }
         let out = '';
-        game.time.time =' ';
-        game.time.m.toString().length < 2 ?  out = '0' + game.time.m : out = game.time.m;
+        game.time.time = ' ';
+        game.time.m.toString().length < 2 ? out = '0' + game.time.m : out = game.time.m;
         game.time.time += out;
-        game.time.s.toString().length < 2 ?  out = '0' + game.time.s : out = game.time.s;
-        game.time.time += ':'+out;
-        document.querySelector('.OutTime').innerHTML = 'Time: ' + game.time.time; 
+        game.time.s.toString().length < 2 ? out = '0' + game.time.s : out = game.time.s;
+        game.time.time += ':' + out;
+        document.querySelector('.OutTime').innerHTML = 'Time: ' + game.time.time;
       }
     },
-    pause: function() {
+    pause: function () {
       game.time.stop = true;
     },
-    clear: function() {
+    clear: function () {
       game.time.m = 0;
       game.time.s = 0;
       game.time.time = '00:00';
@@ -72,11 +72,11 @@ let game = {
       scheme: [],
       time: {
         m: 0,
-        s:0,
+        s: 0,
       },
       moves: 0,
     },
-    add: function() {
+    add: function () {
       console.log('save');
       game.save.data.size = game.fild.size;
       game.save.data.winResult = game.fild.winResult;
@@ -84,11 +84,11 @@ let game = {
       game.save.data.time.s = game.time.s;
       game.save.data.time.m = game.time.m;
       game.save.data.moves = game.moves;
-      localStorage.clear('save');
+      localStorage.removeItem('save');
       let obj = JSON.stringify(game.save.data);
       localStorage.setItem('save', obj)
     },
-    load: function() {
+    load: function () {
       let obj = JSON.parse(localStorage.getItem('save'));
       if (obj) {
         game.fild.size = obj.size;
@@ -100,19 +100,43 @@ let game = {
         game.cell.size = document.getElementById('puzzle').width / game.fild.size;
         /* game.render(); */
         let out = '';
-        game.time.time =' ';
-        game.time.m.toString().length < 2 ?  out = '0' + game.time.m : out = game.time.m;
+        game.time.time = ' ';
+        game.time.m.toString().length < 2 ? out = '0' + game.time.m : out = game.time.m;
         game.time.time += out;
-        game.time.s.toString().length < 2 ?  out = '0' + game.time.s : out = game.time.s;
-        game.time.time += ':'+out;
+        game.time.s.toString().length < 2 ? out = '0' + game.time.s : out = game.time.s;
+        game.time.time += ':' + out;
         document.querySelector('.OutTime').innerHTML = 'Time: ' + game.time.time;
-        document.querySelector('.OutMoves').innerHTML = 'Moves: ' + game.moves; 
+        document.querySelector('.OutMoves').innerHTML = 'Moves: ' + game.moves;
       } else {
         alert('У вас нет сохраненных игр.')
       }
     },
   },
-  init: function() {
+  results: {
+    data: [[], [], [], [], [], []],
+    check: function () {
+      if (localStorage.getItem('results')) {
+        game.results.data = JSON.parse(localStorage.getItem('results'));
+      }
+      game.results.data[game.fild.size - 3].push([game.moves, game.time.time]);
+      game.results.data[game.fild.size - 3].sort((a, b) => {
+        return a[0] - b[0];
+      });
+      if (game.results.data[game.fild.size - 3].length > 10) {
+        game.results.data[game.fild.size - 3].length = 10;
+      }
+      let obj = JSON.stringify(game.results.data);
+      localStorage.removeItem('results');
+      localStorage.setItem('results', obj)
+    },
+    show: function () {
+      if (localStorage.getItem('results')) {
+        game.results.data = JSON.parse(localStorage.getItem('results'));
+      }
+      alert(localStorage.getItem('results'))
+    }
+  },
+  init: function () {
     let cvs = document.getElementById('puzzle');
     cvs.width = this.fild.width;
     cvs.height = this.fild.height;
@@ -121,22 +145,22 @@ let game = {
     this.initWinResult();
     this.initScheme();
     this.render();
-    cvs.addEventListener('click', e=>game.move(e));
+    cvs.addEventListener('click', e => game.move(e));
   },
-  initWinResult: function() {
+  initWinResult: function () {
     this.fild.winResult = [];
     let count = 0;
-    for (let row = 0; row < this.fild.size; row ++) {
+    for (let row = 0; row < this.fild.size; row++) {
       let rowResult = [];
-      for (let col = 0; col < this.fild.size; col ++) {
+      for (let col = 0; col < this.fild.size; col++) {
         count++;
         rowResult.push(count);
       }
       this.fild.winResult.push(rowResult);
     }
-    this.fild.winResult[this.fild.winResult.length-1][this.fild.winResult.length-1] = 0;
+    this.fild.winResult[this.fild.winResult.length - 1][this.fild.winResult.length - 1] = 0;
   },
-  initScheme: function() {
+  initScheme: function () {
     this.fild.scheme = [];
     let existedNumbers = [];
     for (let i = 0; i < this.fild.size; i++) {
@@ -151,11 +175,11 @@ let game = {
       this.fild.scheme.push(row);
     }
   },
-  render: function() {
+  render: function () {
     game.ctx.clearRect(0, 0, game.fild.width, game.fild.height);
 
-    for (let row = 0; row < game.fild.size; row ++) {
-      for (let col = 0; col < game.fild.size; col ++) {
+    for (let row = 0; row < game.fild.size; row++) {
+      for (let col = 0; col < game.fild.size; col++) {
         let dx = col * game.cell.size;
         let dy = row * game.cell.size;
 
@@ -166,22 +190,22 @@ let game = {
         game.ctx.strokeStyle = 'black';
         game.ctx.stroke();
 
-        game.ctx.font = `${game.cell.size*0.7}px monospace`;
+        game.ctx.font = `${game.cell.size * 0.7}px monospace`;
         game.ctx.fillStyle = 'black';
         game.ctx.textAlign = 'left';
         game.ctx.textBaseline = 'top';
 
         let txt = game.fild.scheme[row][col];
         let txtLength = game.ctx.measureText(txt);
-        let offsetx = game.cell.size-txtLength.width;
-        let offsety = game.cell.size-game.cell.size*0.7;
+        let offsetx = game.cell.size - txtLength.width;
+        let offsety = game.cell.size - game.cell.size * 0.7;
 
         if (txt != 0) {
           game.ctx.fillText(txt, dx + offsetx / 2, dy + offsety / 2);
         }
       }
     }
- 
+
     requestAnimationFrame(game.render);
   },
   changeFildSize: function () {
@@ -190,28 +214,28 @@ let game = {
     game.moves = 0;
     game.init();
     document.querySelector('.OutMoves').innerHTML = 'Moves: ' + game.moves;
-    document.querySelector('.OutTime').innerHTML = 'Time: ' + game.time.time; 
+    document.querySelector('.OutTime').innerHTML = 'Time: ' + game.time.time;
   },
-  move: function(e) {
+  move: function (e) {
     let x = e.offsetX;
     let y = e.offsetY;
-     for (i = 0 ; i < game.fild.size; i++) {
-      for( j = 0; j < game.cell.size; j++) {
-        if (x == Math.round(i*game.cell.size + j)) {
+    for (i = 0; i < game.fild.size; i++) {
+      for (j = 0; j < game.cell.size; j++) {
+        if (x == Math.round(i * game.cell.size + j)) {
           game.cell.current.col = i;
         }
-        if (y == Math.round(i*game.cell.size + j)) {
+        if (y == Math.round(i * game.cell.size + j)) {
           game.cell.current.row = i;
         }
       }
-    } 
+    }
 
     if (game.cell.current.col > 0) {
-      if (game.fild.scheme[game.cell.current.row][game.cell.current.col-1]==0) {
-        game.fild.scheme[game.cell.current.row][game.cell.current.col-1] = game.fild.scheme[game.cell.current.row][game.cell.current.col];
+      if (game.fild.scheme[game.cell.current.row][game.cell.current.col - 1] == 0) {
+        game.fild.scheme[game.cell.current.row][game.cell.current.col - 1] = game.fild.scheme[game.cell.current.row][game.cell.current.col];
         game.fild.scheme[game.cell.current.row][game.cell.current.col] = 0;
         if (game.sound) {
-        game.audio.move.play();
+          game.audio.move.play();
         }
         if (game.time.stop == true) {
           game.time.start();
@@ -219,9 +243,9 @@ let game = {
         game.moves++;
       }
     }
-    if (game.cell.current.col < game.fild.size-1) {
-      if (game.fild.scheme[game.cell.current.row][game.cell.current.col+1]==0) {
-        game.fild.scheme[game.cell.current.row][game.cell.current.col+1] = game.fild.scheme[game.cell.current.row][game.cell.current.col];
+    if (game.cell.current.col < game.fild.size - 1) {
+      if (game.fild.scheme[game.cell.current.row][game.cell.current.col + 1] == 0) {
+        game.fild.scheme[game.cell.current.row][game.cell.current.col + 1] = game.fild.scheme[game.cell.current.row][game.cell.current.col];
         game.fild.scheme[game.cell.current.row][game.cell.current.col] = 0;
         if (game.sound) {
           game.audio.move.play();
@@ -233,8 +257,8 @@ let game = {
       }
     }
     if (game.cell.current.row > 0) {
-      if (game.fild.scheme[game.cell.current.row-1][game.cell.current.col]==0) {
-        game.fild.scheme[game.cell.current.row-1][game.cell.current.col] = game.fild.scheme[game.cell.current.row][game.cell.current.col];
+      if (game.fild.scheme[game.cell.current.row - 1][game.cell.current.col] == 0) {
+        game.fild.scheme[game.cell.current.row - 1][game.cell.current.col] = game.fild.scheme[game.cell.current.row][game.cell.current.col];
         game.fild.scheme[game.cell.current.row][game.cell.current.col] = 0;
         if (game.sound) {
           game.audio.move.play();
@@ -245,9 +269,9 @@ let game = {
         game.moves++;
       }
     }
-    if (game.cell.current.row < game.fild.size-1) {
-      if (game.fild.scheme[game.cell.current.row+1][game.cell.current.col]==0) {
-        game.fild.scheme[game.cell.current.row+1][game.cell.current.col] = game.fild.scheme[game.cell.current.row][game.cell.current.col];
+    if (game.cell.current.row < game.fild.size - 1) {
+      if (game.fild.scheme[game.cell.current.row + 1][game.cell.current.col] == 0) {
+        game.fild.scheme[game.cell.current.row + 1][game.cell.current.col] = game.fild.scheme[game.cell.current.row][game.cell.current.col];
         game.fild.scheme[game.cell.current.row][game.cell.current.col] = 0;
         if (game.sound) {
           game.audio.move.play();
@@ -264,34 +288,35 @@ let game = {
     document.querySelector('.OutMoves').innerHTML = 'Moves: ' + game.moves;
 
     if (game.over()) {
-      alert('Hooray! You solved the' + game.fild.size + 'X' + game.fild.size + ' puzzle in ' + game.time.time + ' and ' + game.moves + ' moves!' );
+      this.results.check();
+      alert('Hooray! You solved the' + game.fild.size + 'X' + game.fild.size + ' puzzle in ' + game.time.time + ' and ' + game.moves + ' moves!');
       this.shuffle();
     }
   },
-  over: function() {
-    for (let row = 0; row < this.fild.size; row ++) {
-      for (let col = 0; col < this.fild.size; col ++) {
+  over: function () {
+    for (let row = 0; row < this.fild.size; row++) {
+      for (let col = 0; col < this.fild.size; col++) {
         if (game.fild.winResult[row][col] != game.fild.scheme[row][col]) {
           return false;
         }
       }
     }
     return true;
-  },  
-  shuffle: function() {
+  },
+  shuffle: function () {
     game.time.clear();
     game.moves = 0;
     game.init();
     document.querySelector('.OutMoves').innerHTML = 'Moves: ' + game.moves;
-    document.querySelector('.OutTime').innerHTML = 'Time: ' + game.time.time; 
+    document.querySelector('.OutTime').innerHTML = 'Time: ' + game.time.time;
   },
-  soundSwich: function() {
-    if(!game.sound) {
+  soundSwich: function () {
+    if (!game.sound) {
       game.sound = true;
-      document.querySelector('.sound').innerHTML = "<img src='./assets/img/sound-on.png'>" 
+      document.querySelector('.sound').innerHTML = "<img src='./assets/img/sound-on.png'>"
     } else {
       game.sound = false;
-      document.querySelector('.sound').innerHTML = "<img src='./assets/img/sound-off.png'>" 
+      document.querySelector('.sound').innerHTML = "<img src='./assets/img/sound-off.png'>"
     }
   },
 }
@@ -307,3 +332,4 @@ document.querySelector('.shuffle').addEventListener('click', game.shuffle);
 document.querySelector('.sound').addEventListener('click', game.soundSwich);
 document.querySelector('.save').addEventListener('click', game.save.add);
 document.querySelector('.load').addEventListener('click', game.save.load);
+document.querySelector('.results').addEventListener('click', game.results.show);
