@@ -1,8 +1,8 @@
 document.querySelector('body').innerHTML = "<div class='content'><div class='menu'></div><div class='info'></div><canvas id='puzzle'></canvas><div class='settings'></div></div>";
-document.querySelector('.menu').innerHTML = "<button class='start'>START</button><button class='stop'>STOP</button><button class='save'>SAVE</button><button class='results'>RESULTS</button>";
-document.querySelector('.info').innerHTML = "<div class='OutMoves'>Mooves: 0</div><div class='OutTime'>Time: 00:00:00</div>";
+document.querySelector('.menu').innerHTML = "<button class='shuffle'>SHUFFLE</button><button class='stop'>STOP</button><button class='save'>SAVE</button><button class='load'>LOAD</button><button class='results'>RESULTS</button>";
+document.querySelector('.info').innerHTML = "<div class='OutMoves'>Mooves: 0</div><div class='sound'></div><div class='OutTime'>Time: 00:00</div>";
 document.querySelector('.settings').innerHTML = "<button class='size' value = '3'>3X3</button><button class='size' value = '4'>4X4</button><button class='size' value = '5'>5X5</button><button class='size' value = '6'>6X6</button><button class='size' value = '7'>7X7</button><button class='size' value = '8'>8X8</button>";
-
+document.querySelector('.sound').innerHTML = "<img src='./assets/img/sound-off.png'>" 
 
 
 
@@ -13,6 +13,7 @@ let game = {
     move: new Audio('./assets/audio/move.mp3'),
   },
   sprites: {},
+  sound: false,
   fild:{
     width: 300,
     height: 300,
@@ -31,8 +32,7 @@ let game = {
   time: {
     s:0,
     m:0,
-    o:0,
-    time: '00:00:00',
+    time: '00:00',
     stop: true,
     start: function() {
       game.time.stop = false;
@@ -46,16 +46,10 @@ let game = {
           game.time.m++;
           game.time.s = 0;
         }
-        if (game.time.m==60) {
-          game.time.o++;
-          game.time.m = 0;
-        }
         let out = '';
         game.time.time =' ';
-        game.time.o.toString().length < 2 ?  out = '0' + game.time.o : out = game.time.o;
-        game.time.time += out;
         game.time.m.toString().length < 2 ?  out = '0' + game.time.m : out = game.time.m;
-        game.time.time += ':'+out;
+        game.time.time += out;
         game.time.s.toString().length < 2 ?  out = '0' + game.time.s : out = game.time.s;
         game.time.time += ':'+out;
         document.querySelector('.OutTime').innerHTML = 'Time: ' + game.time.time; 
@@ -65,12 +59,58 @@ let game = {
       game.time.stop = true;
     },
     clear: function() {
-      game.time.o = 0;
       game.time.m = 0;
       game.time.s = 0;
-      game.time.time = '00:00:00';
+      game.time.time = '00:00';
       game.time.stop = true;
     }
+  },
+  save: {
+    data: {
+      size: 0,
+      winResult: [],
+      scheme: [],
+      time: {
+        m: 0,
+        s:0,
+      },
+      moves: 0,
+    },
+    add: function() {
+      console.log('save');
+      game.save.data.size = game.fild.size;
+      game.save.data.winResult = game.fild.winResult;
+      game.save.data.scheme = game.fild.scheme;
+      game.save.data.time.s = game.time.s;
+      game.save.data.time.m = game.time.m;
+      game.save.data.moves = game.moves;
+      localStorage.clear('save');
+      let obj = JSON.stringify(game.save.data);
+      localStorage.setItem('save', obj)
+    },
+    load: function() {
+      let obj = JSON.parse(localStorage.getItem('save'));
+      if (obj) {
+        game.fild.size = obj.size;
+        game.fild.winResult = obj.winResult;
+        game.fild.scheme = obj.scheme;
+        game.time.s = obj.time.s;
+        game.time.m = obj.time.m;
+        game.moves = obj.moves;
+        game.cell.size = document.getElementById('puzzle').width / game.fild.size;
+        /* game.render(); */
+        let out = '';
+        game.time.time =' ';
+        game.time.m.toString().length < 2 ?  out = '0' + game.time.m : out = game.time.m;
+        game.time.time += out;
+        game.time.s.toString().length < 2 ?  out = '0' + game.time.s : out = game.time.s;
+        game.time.time += ':'+out;
+        document.querySelector('.OutTime').innerHTML = 'Time: ' + game.time.time;
+        document.querySelector('.OutMoves').innerHTML = 'Moves: ' + game.moves; 
+      } else {
+        alert('У вас нет сохраненных игр.')
+      }
+    },
   },
   init: function() {
     let cvs = document.getElementById('puzzle');
@@ -170,7 +210,9 @@ let game = {
       if (game.fild.scheme[game.cell.current.row][game.cell.current.col-1]==0) {
         game.fild.scheme[game.cell.current.row][game.cell.current.col-1] = game.fild.scheme[game.cell.current.row][game.cell.current.col];
         game.fild.scheme[game.cell.current.row][game.cell.current.col] = 0;
+        if (game.sound) {
         game.audio.move.play();
+        }
         if (game.time.stop == true) {
           game.time.start();
         }
@@ -181,7 +223,9 @@ let game = {
       if (game.fild.scheme[game.cell.current.row][game.cell.current.col+1]==0) {
         game.fild.scheme[game.cell.current.row][game.cell.current.col+1] = game.fild.scheme[game.cell.current.row][game.cell.current.col];
         game.fild.scheme[game.cell.current.row][game.cell.current.col] = 0;
-        game.audio.move.play();
+        if (game.sound) {
+          game.audio.move.play();
+        }
         if (game.time.stop == true) {
           game.time.start();
         }
@@ -192,7 +236,9 @@ let game = {
       if (game.fild.scheme[game.cell.current.row-1][game.cell.current.col]==0) {
         game.fild.scheme[game.cell.current.row-1][game.cell.current.col] = game.fild.scheme[game.cell.current.row][game.cell.current.col];
         game.fild.scheme[game.cell.current.row][game.cell.current.col] = 0;
-        game.audio.move.play();
+        if (game.sound) {
+          game.audio.move.play();
+        }
         if (game.time.stop == true) {
           game.time.start();
         }
@@ -203,7 +249,9 @@ let game = {
       if (game.fild.scheme[game.cell.current.row+1][game.cell.current.col]==0) {
         game.fild.scheme[game.cell.current.row+1][game.cell.current.col] = game.fild.scheme[game.cell.current.row][game.cell.current.col];
         game.fild.scheme[game.cell.current.row][game.cell.current.col] = 0;
-        game.audio.move.play();
+        if (game.sound) {
+          game.audio.move.play();
+        }
         if (game.time.stop == true) {
           game.time.start();
         }
@@ -216,7 +264,8 @@ let game = {
     document.querySelector('.OutMoves').innerHTML = 'Moves: ' + game.moves;
 
     if (game.over()) {
-      alert('You win ' + game.fild.size + 'X' + game.fild.size + ' game with ' + game.moves + ' moves in ' + game.time.time)
+      alert('Hooray! You solved the' + game.fild.size + 'X' + game.fild.size + ' puzzle in ' + game.time.time + ' and ' + game.moves + ' moves!' );
+      this.shuffle();
     }
   },
   over: function() {
@@ -229,6 +278,22 @@ let game = {
     }
     return true;
   },  
+  shuffle: function() {
+    game.time.clear();
+    game.moves = 0;
+    game.init();
+    document.querySelector('.OutMoves').innerHTML = 'Moves: ' + game.moves;
+    document.querySelector('.OutTime').innerHTML = 'Time: ' + game.time.time; 
+  },
+  soundSwich: function() {
+    if(!game.sound) {
+      game.sound = true;
+      document.querySelector('.sound').innerHTML = "<img src='./assets/img/sound-on.png'>" 
+    } else {
+      game.sound = false;
+      document.querySelector('.sound').innerHTML = "<img src='./assets/img/sound-off.png'>" 
+    }
+  },
 }
 game.init();
 
@@ -237,5 +302,8 @@ const sizeBtns = document.querySelectorAll('.size');
 for (let i = 0; i < sizeBtns.length; i++) {
   sizeBtns[i].addEventListener('click', game.changeFildSize);
 }
-
 document.querySelector('.stop').addEventListener('click', game.time.pause);
+document.querySelector('.shuffle').addEventListener('click', game.shuffle);
+document.querySelector('.sound').addEventListener('click', game.soundSwich);
+document.querySelector('.save').addEventListener('click', game.save.add);
+document.querySelector('.load').addEventListener('click', game.save.load);
