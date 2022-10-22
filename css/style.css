@@ -16,6 +16,7 @@ body {
    margin: 7rem 0 0 0;
    display: flex;
    justify-content: space-between;
+   position: relative;
 }
 
 .info {
@@ -31,6 +32,7 @@ body {
    width: 300px;
    height: 300px;
    border: 2px solid greenyellow;
+   border-radius: 0.5rem;
 }
 
 .settings {
@@ -56,3 +58,21 @@ body {
 .sound:active {
    transform: scale(0.9);
 }
+
+.resultsOut{
+   padding: 1rem;
+   position: absolute;
+   right: -4px;
+   top: 2rem;
+   z-index: 100;
+   background-color: white;
+   border: 2px solid rgb(107, 0, 107);
+   border-radius: 0.5rem;
+   display: block;
+}
+
+.resultsOut-hidden{
+   display: none;
+}
+
+

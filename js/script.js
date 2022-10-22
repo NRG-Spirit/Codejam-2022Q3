@@ -1,5 +1,5 @@
 document.querySelector('body').innerHTML = "<div class='content'><div class='menu'></div><div class='info'></div><canvas id='puzzle'></canvas><div class='settings'></div></div>";
-document.querySelector('.menu').innerHTML = "<button class='shuffle'>SHUFFLE</button><button class='stop'>STOP</button><button class='save'>SAVE</button><button class='load'>LOAD</button><button class='results'>RESULTS</button>";
+document.querySelector('.menu').innerHTML = "<button class='shuffle'>SHUFFLE</button><button class='stop'>STOP</button><button class='save'>SAVE</button><button class='load'>LOAD</button><button class='results'>RESULTS</button><div class='resultsOut resultsOut-hidden'></div>";
 document.querySelector('.info').innerHTML = "<div class='OutMoves'>Mooves: 0</div><div class='sound'></div><div class='OutTime'>Time: 00:00</div>";
 document.querySelector('.settings').innerHTML = "<button class='size' value = '3'>3X3</button><button class='size' value = '4'>4X4</button><button class='size' value = '5'>5X5</button><button class='size' value = '6'>6X6</button><button class='size' value = '7'>7X7</button><button class='size' value = '8'>8X8</button>";
 document.querySelector('.sound').innerHTML = "<img src='./assets/img/sound-off.png'>"
@@ -132,8 +132,20 @@ let game = {
     show: function () {
       if (localStorage.getItem('results')) {
         game.results.data = JSON.parse(localStorage.getItem('results'));
+      };
+      let tbl = 'TOP RESULTS: <br>';
+      if (game.results.data[game.fild.size-3].length > 0) {
+        for (let i=0; i<game.results.data[game.fild.size-3].length; i++) {
+          tbl += i+1 + '.&nbsp &nbsp ' + game.results.data[game.fild.size-3][i][0] + ' moves in ' + game.results.data[game.fild.size-3][i][1] + '<br>';
+        }
+      } else {
+        tbl += "you don't have any records";
       }
-      alert(localStorage.getItem('results'))
+      document.querySelector('.resultsOut').innerHTML = "" + tbl + "</div";
+      document.querySelector('.resultsOut').classList.remove('resultsOut-hidden');
+    },
+    hide: function() {
+      document.querySelector('.resultsOut').classList.add('resultsOut-hidden');
     }
   },
   init: function () {
@@ -332,4 +344,5 @@ document.querySelector('.shuffle').addEventListener('click', game.shuffle);
 document.querySelector('.sound').addEventListener('click', game.soundSwich);
 document.querySelector('.save').addEventListener('click', game.save.add);
 document.querySelector('.load').addEventListener('click', game.save.load);
-document.querySelector('.results').addEventListener('click', game.results.show);
+document.querySelector('.results').addEventListener('mousedown', game.results.show);
+document.querySelector('.results').addEventListener('mouseup', game.results.hide);
