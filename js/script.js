@@ -3,6 +3,40 @@ document.querySelector('.menu').innerHTML = "<button class='shuffle'>SHUFFLE</bu
 document.querySelector('.info').innerHTML = "<div class='OutMoves'>Mooves: 0</div><div class='sound'></div><div class='OutTime'>Time: 00:00</div>";
 document.querySelector('.settings').innerHTML = "<button class='size' value = '3'>3X3</button><button class='size' value = '4'>4X4</button><button class='size' value = '5'>5X5</button><button class='size' value = '6'>6X6</button><button class='size' value = '7'>7X7</button><button class='size' value = '8'>8X8</button>";
 document.querySelector('.sound').innerHTML = "<img src='./assets/img/sound-off.png'>"
+let screenWidth = document.body.clientWidth;
+
+
+if ( screenWidth > 1100 ) {
+  gameWidth = 1000;
+};
+  
+if ( screenWidth > 1000 && screenWidth <= 1100 ) {
+  gameWidth = 900;
+};
+   
+if ( screenWidth > 900 && screenWidth <= 1000 ) {
+  gameWidth = 800;
+};
+   
+if ( screenWidth > 800 && screenWidth <= 900 ) {
+  gameWidth = 700;
+};
+   
+if ( screenWidth > 700 && screenWidth <= 800 ) {
+  gameWidth = 600;
+};
+   
+if ( screenWidth > 600 && screenWidth <= 700 ) {
+  gameWidth = 500;
+};
+  
+if ( screenWidth > 500 && screenWidth <=600 ) {
+  gameWidth = 400;
+};
+   
+if ( screenWidth < 500 ) {
+  gameWidth = 300;
+};
 
 
 
@@ -15,8 +49,8 @@ let game = {
   sprites: {},
   sound: false,
   fild: {
-    width: 300,
-    height: 300,
+    width: gameWidth,
+    height: gameWidth,
     size: 4,
     winResult: [],
     scheme: [],
@@ -153,7 +187,7 @@ let game = {
     cvs.width = this.fild.width;
     cvs.height = this.fild.height;
     this.ctx = cvs.getContext('2d');
-    this.cell.size = cvs.width / this.fild.size;
+    this.cell.size = this.fild.width / this.fild.size;
     this.initWinResult();
     this.initScheme();
     this.render();
@@ -346,3 +380,6 @@ document.querySelector('.save').addEventListener('click', game.save.add);
 document.querySelector('.load').addEventListener('click', game.save.load);
 document.querySelector('.results').addEventListener('mousedown', game.results.show);
 document.querySelector('.results').addEventListener('mouseup', game.results.hide);
+
+
+

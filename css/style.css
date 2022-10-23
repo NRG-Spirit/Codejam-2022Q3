@@ -8,7 +8,7 @@ body {
 }
 
 .content {
-   width: 300px;
+   width: 1000px;
    margin: 0 auto;
 }
 
@@ -29,10 +29,10 @@ body {
 
 #puzzle {
    margin: 1rem 0 0 0;
-   width: 300px;
-   height: 300px;
    border: 2px solid greenyellow;
    border-radius: 0.5rem;
+   width: 1000px;
+   height: 1000px;
 }
 
 .settings {
@@ -75,4 +75,71 @@ body {
    display: none;
 }
 
+@media (max-width: 1100px) {
+   .content {
+      width: 900px;
+   }
+   #puzzle {
+      width: 900px;
+      height: 900px;
+   }
+}
 
+@media (max-width: 1000px) {
+   .content {
+      width: 800px;
+   }
+   #puzzle {
+      width: 800px;
+      height: 800px;
+   }
+}
+
+@media (max-width: 900px) {
+   .content {
+      width: 700px;
+   }
+   #puzzle {
+      width: 700px;
+      height: 700px;
+   }
+}
+
+@media (max-width: 800px) {
+   .content {
+      width: 600px;
+   }
+   #puzzle {
+      width: 600px;
+      height: 600px;
+   }
+}
+
+@media (max-width: 700px) {
+   .content {
+      width: 500px;
+   }
+   #puzzle {
+      width: 500px;
+      height: 500px;
+   }
+}
+
+@media (max-width: 600px) {
+   .content {
+      width: 400px;
+   }
+   #puzzle {
+      width: 400px;
+      height: 400px;
+   }
+}
+@media (max-width: 500px) {
+   .content {
+      width: 300px;
+   }
+   #puzzle {
+      width: 300px;
+      height: 300px;
+   }
+}
