@@ -24,9 +24,6 @@ if ( screenWidth > 1100 ) {
   gameWidth = 300;
 };
 
-
-
-
 let game = {
   ctx: undefined,
   cvs: document.getElementById('puzzle'),
@@ -48,11 +45,12 @@ let game = {
       col: undefined,
       row: undefined,
       val: undefined,
+      value: undefined,
       dir: undefined,
       dx: undefined,
       dy: undefined,
     },
-    dragAndDrop: false,
+    dragAndDrop: true,
   },
   moves: 0,
   cursor: {
@@ -229,6 +227,7 @@ let game = {
 
         game.ctx.beginPath();
         game.ctx.fillStyle = 'white';
+        console.log(game.cell.current.val);
         if (txt != 0 && txt != game.cell.current.val) {
           game.ctx.rect(dx, dy, game.cell.size, game.cell.size);
         }
@@ -251,23 +250,38 @@ let game = {
         }
       }
     }
-     if (game.cell.current.dir) {
-/*       game.ctx.fillStyle = 'white';
-      game.ctx.rect(game.cell.current.dx, game.cell.current.dy, game.cell.size, game.cell.size);
-      game.ctx.fill();
-      game.ctx.strokeStyle = 'black';
-      game.ctx.stroke(); */
 
+    if (game.cell.current.dir) {
       game.ctx.font = `${game.cell.size * 0.7}px monospace`;
       game.ctx.fillStyle = 'black';
       game.ctx.textAlign = 'left';
       game.ctx.textBaseline = 'top';
 
+      let txtLength = game.ctx.measureText(game.cell.current.value);
+      let offsetx = game.cell.size - txtLength.width;
+      let offsety = game.cell.size - game.cell.size * 0.7;
+      game.ctx.fillText(game.cell.current.value, game.cell.current.dx + offsetx / 2, game.cell.current.dy + offsety / 2);
+    } 
+
+    if (game.cell.dragAndDrop != true) {
+      console.log(game.cell.dragAndDrop)
+      console.log(game.cell.current.val)
+/*    game.ctx.fillStyle = 'greenyellow'; 
+      game.ctx.rect(game.cell.current.dx, game.cell.current.dy, game.cell.size, game.cell.size);
+      game.ctx.fill();
+      game.ctx.strokeStyle = 'black';
+      game.ctx.stroke();  */
+
+      game.ctx.font = `${game.cell.size * 0.7}px monospace`;
+      game.ctx.fillStyle = 'black'; 
+      game.ctx.textAlign = 'left';
+      game.ctx.textBaseline = 'top';
       let txtLength = game.ctx.measureText(game.cell.current.val);
       let offsetx = game.cell.size - txtLength.width;
       let offsety = game.cell.size - game.cell.size * 0.7;
       game.ctx.fillText(game.cell.current.val, game.cell.current.dx + offsetx / 2, game.cell.current.dy + offsety / 2);
-    } 
+    }
+
 
     requestAnimationFrame(game.render);
   },
@@ -292,8 +306,7 @@ let game = {
         }
       }
     }
-    game.cell.current.val = game.fild.scheme[game.cell.current.row][game.cell.current.col];
-
+    game.cell.current.value = game.fild.scheme[game.cell.current.row][game.cell.current.col]
     if (game.cell.current.col > 0) {
       if (game.fild.scheme[game.cell.current.row][game.cell.current.col - 1] == 0) {
         game.fild.scheme[game.cell.current.row][game.cell.current.col - 1] = game.fild.scheme[game.cell.current.row][game.cell.current.col];
@@ -368,7 +381,7 @@ let game = {
     game.cell.current.dx = game.cell.current.col * game.cell.size;
     game.cell.current.dy = game.cell.current.row * game.cell.size;
     let count = 0;
-    console.log(game.cell.current.val);
+
     
     intervalID = setInterval( function() {
         if (game.cell.current.dir == 'r') {
@@ -384,26 +397,19 @@ let game = {
           game.cell.current.dy+=5;
         }
         count+=5;
-
-        console.log('cur dx' + game.cell.current.dx);
-        console.log('cur val ' + game.cell.current.val);
-        console.log('col' + game.cell.current.col);
-        console.log('row' + game.cell.current.row);
-
         
         if (count >= game.cell.size) {
           clearInterval(intervalID);
+          game.cell.current.value = undefined;
+          game.cell.current.val = undefined;
           game.cell.current.row = undefined;
           game.cell.current.col = undefined;
-          game.cell.current.val = undefined;
           game.cell.current.dir = undefined;
-          game.cell.current.dx = 0;
-          game.cell.current.dy =0;
+          game.cell.current.dx = undefined;
+          game.cell.current.dy = undefined;
+          console.log(game.cell.current.value)
         }
-
       },1); 
-
-
   },
   over: function () {
     for (let row = 0; row < this.fild.size; row++) {
@@ -460,39 +466,8 @@ let game = {
 
     if (game.cell.current.val) {
       game.cell.dragAndDrop = false;
-      game.drug();
       window.addEventListener('mousemove', game.drugMove);
       game.cvs.addEventListener('mouseup', game.drop);
-    }
-
-
-  },
-  drug: function() {
-    if (game.cell.dragAndDrop != true) {
-      let cursorDX = game.cursor.dx;
-      let cursorDY = game.cursor.dy;
-      let dx = game.cell.current.col * game.cell.size + cursorDX;
-      let dy = game.cell.current.row * game.cell.size + cursorDY;
-      let txt = game.cell.current.val;
-
-      game.ctx.beginPath();
-      game.ctx.fillStyle = 'greenyellow'; 
-      game.ctx.rect(dx, dy, game.cell.size, game.cell.size);
-      game.ctx.fill();
-      game.ctx.strokeStyle = 'black';
-      game.ctx.stroke();
-
-      game.ctx.font = `${game.cell.size * 0.7}px monospace`;
-      game.ctx.fillStyle = 'black'; 
-      game.ctx.textAlign = 'left';
-      game.ctx.textBaseline = 'top';
-      let txtLength = game.ctx.measureText(txt);
-      let offsetx = game.cell.size - txtLength.width;
-      let offsety = game.cell.size - game.cell.size * 0.7;
-      game.ctx.fillText(txt, dx + offsetx / 2, dy + offsety / 2);
-      requestAnimationFrame(game.drug);
-    } else {
-      cancelAnimationFrame(game.drug);
     }
   },
   drugMove: function(e) {
@@ -506,6 +481,9 @@ let game = {
     game.cursor.dx = e.pageX - game.cursor.x;
     game.cursor.dy = e.pageY - game.cursor.y;
   }
+  game.cell.current.dx = game.cell.current.col * game.cell.size + game.cursor.dx;
+  game.cell.current.dy = game.cell.current.row * game.cell.size + game.cursor.dy;
+  console.log(game.cell.current.dx)
   },
   drop: function(e) {
     window.removeEventListener('mousemove', game.drugMove);
@@ -568,10 +546,8 @@ let game = {
       alert('Hooray! You solved the' + game.fild.size + 'X' + game.fild.size + ' puzzle in ' + game.time.time + ' and ' + game.moves + ' moves!');
       game.shuffle();
     }
-
-
-
-
+    
+    game.cell.dragAndDrop = true;
     if (game.cursor.dx >= -game.cell.size * 0.3 && game.cursor.dx <= game.cell.size * 0.3 && game.cursor.dy >= -game.cell.size * 0.3 && game.cursor.dy <= game.cell.size * 0.3) {
     game.move(e);
     } else {
@@ -580,11 +556,10 @@ let game = {
       game.cell.current.row = undefined;
      }
 
-    game.cell.dragAndDrop = true;
-    game.cursor.x = undefined;
-    game.cursor.y = undefined;
-    game.cursor.dx = 0;
-    game.cursor.dy = 0;
+     game.cursor.x = undefined;
+     game.cursor.y = undefined;
+     game.cursor.dx = 0;
+     game.cursor.dy = 0;
   }
 }
 game.init();
