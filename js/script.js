@@ -48,6 +48,9 @@ let game = {
       col: undefined,
       row: undefined,
       val: undefined,
+      dir: undefined,
+      dx: undefined,
+      dy: undefined,
     },
     dragAndDrop: false,
   },
@@ -106,7 +109,6 @@ let game = {
       moves: 0,
     },
     add: function () {
-      console.log('save');
       game.save.data.size = game.fild.size;
       game.save.data.winResult = game.fild.winResult;
       game.save.data.scheme = game.fild.scheme;
@@ -249,6 +251,23 @@ let game = {
         }
       }
     }
+     if (game.cell.current.dir) {
+/*       game.ctx.fillStyle = 'white';
+      game.ctx.rect(game.cell.current.dx, game.cell.current.dy, game.cell.size, game.cell.size);
+      game.ctx.fill();
+      game.ctx.strokeStyle = 'black';
+      game.ctx.stroke(); */
+
+      game.ctx.font = `${game.cell.size * 0.7}px monospace`;
+      game.ctx.fillStyle = 'black';
+      game.ctx.textAlign = 'left';
+      game.ctx.textBaseline = 'top';
+
+      let txtLength = game.ctx.measureText(game.cell.current.val);
+      let offsetx = game.cell.size - txtLength.width;
+      let offsety = game.cell.size - game.cell.size * 0.7;
+      game.ctx.fillText(game.cell.current.val, game.cell.current.dx + offsetx / 2, game.cell.current.dy + offsety / 2);
+    } 
 
     requestAnimationFrame(game.render);
   },
@@ -273,6 +292,7 @@ let game = {
         }
       }
     }
+    game.cell.current.val = game.fild.scheme[game.cell.current.row][game.cell.current.col];
 
     if (game.cell.current.col > 0) {
       if (game.fild.scheme[game.cell.current.row][game.cell.current.col - 1] == 0) {
@@ -285,6 +305,8 @@ let game = {
           game.time.start();
         }
         game.moves++;
+        game.cell.current.dir = 'l';
+        game.anim();
       }
     }
     if (game.cell.current.col < game.fild.size - 1) {
@@ -298,6 +320,8 @@ let game = {
           game.time.start();
         }
         game.moves++;
+        game.cell.current.dir = 'r';
+        game.anim();
       }
     }
     if (game.cell.current.row > 0) {
@@ -311,6 +335,8 @@ let game = {
           game.time.start();
         }
         game.moves++;
+        game.cell.current.dir = 't';
+        game.anim();
       }
     }
     if (game.cell.current.row < game.fild.size - 1) {
@@ -324,10 +350,11 @@ let game = {
           game.time.start();
         }
         game.moves++;
+        game.cell.current.dir = 'b';
+        game.anim();
       }
     }
-    game.cell.current.row = undefined;
-    game.cell.current.col = undefined;
+
 
     document.querySelector('.OutMoves').innerHTML = 'Moves: ' + game.moves;
 
@@ -336,6 +363,47 @@ let game = {
       alert('Hooray! You solved the' + game.fild.size + 'X' + game.fild.size + ' puzzle in ' + game.time.time + ' and ' + game.moves + ' moves!');
       this.shuffle();
     }
+  },
+  anim: function() {
+    game.cell.current.dx = game.cell.current.col * game.cell.size;
+    game.cell.current.dy = game.cell.current.row * game.cell.size;
+    let count = 0;
+    console.log(game.cell.current.val);
+    
+    intervalID = setInterval( function() {
+        if (game.cell.current.dir == 'r') {
+          game.cell.current.dx+=5;
+        }
+        if (game.cell.current.dir == 'l') {
+          game.cell.current.dx-=5;
+        }
+        if (game.cell.current.dir == 't') {
+          game.cell.current.dy-=5;
+        }
+        if (game.cell.current.dir == 'b') {
+          game.cell.current.dy+=5;
+        }
+        count+=5;
+
+        console.log('cur dx' + game.cell.current.dx);
+        console.log('cur val ' + game.cell.current.val);
+        console.log('col' + game.cell.current.col);
+        console.log('row' + game.cell.current.row);
+
+        
+        if (count >= game.cell.size) {
+          clearInterval(intervalID);
+          game.cell.current.row = undefined;
+          game.cell.current.col = undefined;
+          game.cell.current.val = undefined;
+          game.cell.current.dir = undefined;
+          game.cell.current.dx = 0;
+          game.cell.current.dy =0;
+        }
+
+      },1); 
+
+
   },
   over: function () {
     for (let row = 0; row < this.fild.size; row++) {
@@ -403,7 +471,6 @@ let game = {
     if (game.cell.dragAndDrop != true) {
       let cursorDX = game.cursor.dx;
       let cursorDY = game.cursor.dy;
-      console.log('dx' + cursorDX);
       let dx = game.cell.current.col * game.cell.size + cursorDX;
       let dy = game.cell.current.row * game.cell.size + cursorDY;
       let txt = game.cell.current.val;
@@ -442,8 +509,6 @@ let game = {
   },
   drop: function(e) {
     window.removeEventListener('mousemove', game.drugMove);
-    console.log(game.cell.current.row)
-    console.log(game.fild.scheme[game.cell.current.row][game.cell.current.col]);
     if (game.cell.current.col>0) {
       if (game.fild.scheme[game.cell.current.row][game.cell.current.col-1] == 0 && game.cursor.dx > -game.cell.size*1.3 && game.cursor.dx < -game.cell.size*0.3 && game.cursor.dy < game.cell.size && game.cursor.dy > -game.cell.size) {
         game.fild.scheme[game.cell.current.row][game.cell.current.col-1] = game.fild.scheme[game.cell.current.row][game.cell.current.col];
@@ -509,16 +574,17 @@ let game = {
 
     if (game.cursor.dx >= -game.cell.size * 0.3 && game.cursor.dx <= game.cell.size * 0.3 && game.cursor.dy >= -game.cell.size * 0.3 && game.cursor.dy <= game.cell.size * 0.3) {
     game.move(e);
-    }
-    
+    } else {
+      game.cell.current.val = undefined;
+      game.cell.current.col = undefined;
+      game.cell.current.row = undefined;
+     }
+
     game.cell.dragAndDrop = true;
     game.cursor.x = undefined;
     game.cursor.y = undefined;
     game.cursor.dx = 0;
     game.cursor.dy = 0;
-    game.cell.current.col = undefined;
-    game.cell.current.row = undefined;
-    game.cell.current.val = undefined;
   }
 }
 game.init();
