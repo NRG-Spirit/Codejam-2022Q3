@@ -4,6 +4,8 @@ document.querySelector('.info').innerHTML = "<div class='OutMoves'>Mooves: 0</di
 document.querySelector('.settings').innerHTML = "<button class='size' value = '3'>3X3</button><button class='size' value = '4'>4X4</button><button class='size' value = '5'>5X5</button><button class='size' value = '6'>6X6</button><button class='size' value = '7'>7X7</button><button class='size' value = '8'>8X8</button>";
 document.querySelector('.sound').innerHTML = "<img src='./assets/img/sound-off.png'>"
 
+alert('После изменения ширины экрана перезагрузи страницу');
+
 let screenWidth = document.body.clientWidth;
 
 if ( screenWidth > 1100 ) {
