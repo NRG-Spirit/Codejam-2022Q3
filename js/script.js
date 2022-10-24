@@ -29,6 +29,7 @@ if ( screenWidth > 1100 ) {
 
 let game = {
   ctx: undefined,
+  cvs: document.getElementById('puzzle'),
   audio: {
     move: new Audio('./assets/audio/move.mp3'),
   },
@@ -46,9 +47,17 @@ let game = {
     current: {
       col: undefined,
       row: undefined,
-    }
+      val: undefined,
+    },
+    dragAndDrop: false,
   },
   moves: 0,
+  cursor: {
+    dx: 0,
+    dy: 0,
+    x: undefined,
+    y: undefined,
+  },
   time: {
     s: 0,
     m: 0,
@@ -169,15 +178,15 @@ let game = {
     }
   },
   init: function () {
-    let cvs = document.getElementById('puzzle');
-    cvs.width = this.fild.width;
-    cvs.height = this.fild.height;
-    this.ctx = cvs.getContext('2d');
+    this.cvs.width = this.fild.width;
+    this.cvs.height = this.fild.height;
+    this.ctx = this.cvs.getContext('2d');
     this.cell.size = this.fild.width / this.fild.size;
     this.initWinResult();
     this.initScheme();
     this.render();
-    cvs.addEventListener('click', e => game.move(e));
+/*      this.cvs.addEventListener('click', game.move);  */
+    this.cvs.addEventListener('mousedown', game.drugAndDrop);
   },
   initWinResult: function () {
     this.fild.winResult = [];
@@ -214,10 +223,13 @@ let game = {
       for (let col = 0; col < game.fild.size; col++) {
         let dx = col * game.cell.size;
         let dy = row * game.cell.size;
+        let txt = game.fild.scheme[row][col];
 
         game.ctx.beginPath();
         game.ctx.fillStyle = 'white';
-        game.ctx.rect(dx, dy, game.cell.size, game.cell.size);
+        if (txt != 0 && txt != game.cell.current.val) {
+          game.ctx.rect(dx, dy, game.cell.size, game.cell.size);
+        }
         game.ctx.fill();
         game.ctx.strokeStyle = 'black';
         game.ctx.stroke();
@@ -227,12 +239,12 @@ let game = {
         game.ctx.textAlign = 'left';
         game.ctx.textBaseline = 'top';
 
-        let txt = game.fild.scheme[row][col];
+
         let txtLength = game.ctx.measureText(txt);
         let offsetx = game.cell.size - txtLength.width;
         let offsety = game.cell.size - game.cell.size * 0.7;
 
-        if (txt != 0) {
+        if (txt != 0 && txt != game.cell.current.val) {
           game.ctx.fillText(txt, dx + offsetx / 2, dy + offsety / 2);
         }
       }
@@ -351,6 +363,163 @@ let game = {
       document.querySelector('.sound').innerHTML = "<img src='./assets/img/sound-off.png'>"
     }
   },
+  drugAndDrop: function (e) {
+    let x = e.offsetX;
+    let y = e.offsetY;
+    for (i = 0; i < game.fild.size; i++) {
+      for (j = 0; j < game.cell.size; j++) {
+        if (x == Math.round(i * game.cell.size + j)) {
+          game.cell.current.col = i;
+        }
+        if (y == Math.round(i * game.cell.size + j)) {
+          game.cell.current.row = i;
+        }
+      }
+    }
+
+    if (game.cell.current.col > 0 && game.fild.scheme[game.cell.current.row][game.cell.current.col - 1] == 0) {
+      game.cell.current.val = game.fild.scheme[game.cell.current.row][game.cell.current.col];
+    }
+    if (game.cell.current.col < game.fild.size - 1 && game.fild.scheme[game.cell.current.row][game.cell.current.col + 1] == 0) {
+      game.cell.current.val = game.fild.scheme[game.cell.current.row][game.cell.current.col];
+    }
+    if (game.cell.current.row > 0 && game.fild.scheme[game.cell.current.row - 1][game.cell.current.col] == 0) {
+      game.cell.current.val = game.fild.scheme[game.cell.current.row][game.cell.current.col];
+    }
+    if (game.cell.current.row < game.fild.size - 1 && game.fild.scheme[game.cell.current.row + 1][game.cell.current.col] == 0) {
+      game.cell.current.val = game.fild.scheme[game.cell.current.row][game.cell.current.col];
+    }
+
+    if (game.cell.current.val) {
+      game.cell.dragAndDrop = false;
+      game.drug();
+      window.addEventListener('mousemove', game.drugMove);
+      game.cvs.addEventListener('mouseup', game.drop);
+    }
+
+
+  },
+  drug: function() {
+    if (game.cell.dragAndDrop != true) {
+      let cursorDX = game.cursor.dx;
+      let cursorDY = game.cursor.dy;
+      console.log('dx' + cursorDX);
+      let dx = game.cell.current.col * game.cell.size + cursorDX;
+      let dy = game.cell.current.row * game.cell.size + cursorDY;
+      let txt = game.cell.current.val;
+
+      game.ctx.beginPath();
+      game.ctx.fillStyle = 'greenyellow'; 
+      game.ctx.rect(dx, dy, game.cell.size, game.cell.size);
+      game.ctx.fill();
+      game.ctx.strokeStyle = 'black';
+      game.ctx.stroke();
+
+      game.ctx.font = `${game.cell.size * 0.7}px monospace`;
+      game.ctx.fillStyle = 'black'; 
+      game.ctx.textAlign = 'left';
+      game.ctx.textBaseline = 'top';
+      let txtLength = game.ctx.measureText(txt);
+      let offsetx = game.cell.size - txtLength.width;
+      let offsety = game.cell.size - game.cell.size * 0.7;
+      game.ctx.fillText(txt, dx + offsetx / 2, dy + offsety / 2);
+      requestAnimationFrame(game.drug);
+    } else {
+      cancelAnimationFrame(game.drug);
+    }
+  },
+  drugMove: function(e) {
+    if (game.cell.dragAndDrop != true) {
+    if (!game.cursor.x) {
+      game.cursor.x = e.pageX;
+    } 
+    if (!game.cursor.y) {
+      game.cursor.y = e.pageY;
+    }
+    game.cursor.dx = e.pageX - game.cursor.x;
+    game.cursor.dy = e.pageY - game.cursor.y;
+  }
+  },
+  drop: function(e) {
+    window.removeEventListener('mousemove', game.drugMove);
+    console.log(game.cell.current.row)
+    console.log(game.fild.scheme[game.cell.current.row][game.cell.current.col]);
+    if (game.cell.current.col>0) {
+      if (game.fild.scheme[game.cell.current.row][game.cell.current.col-1] == 0 && game.cursor.dx > -game.cell.size*1.3 && game.cursor.dx < -game.cell.size*0.3 && game.cursor.dy < game.cell.size && game.cursor.dy > -game.cell.size) {
+        game.fild.scheme[game.cell.current.row][game.cell.current.col-1] = game.fild.scheme[game.cell.current.row][game.cell.current.col];
+        game.fild.scheme[game.cell.current.row][game.cell.current.col] = 0;
+        if (game.sound) {
+          game.audio.move.play();
+        }
+        if (game.time.stop == true) {
+          game.time.start();
+        }
+        game.moves++;
+      }
+    }
+    if (game.cell.current.col<game.fild.size) {
+      if (game.fild.scheme[game.cell.current.row][game.cell.current.col+1] == 0 && game.cursor.dx < game.cell.size*1.3 && game.cursor.dx > game.cell.size*0.3 && game.cursor.dy < game.cell.size && game.cursor.dy > -game.cell.size) {
+        game.fild.scheme[game.cell.current.row][game.cell.current.col+1] = game.fild.scheme[game.cell.current.row][game.cell.current.col];
+        game.fild.scheme[game.cell.current.row][game.cell.current.col] = 0;
+        if (game.sound) {
+          game.audio.move.play();
+        }
+        if (game.time.stop == true) {
+          game.time.start();
+        }
+        game.moves++;
+      }
+    }
+    if (game.cell.current.row>0) {
+      if (game.fild.scheme[game.cell.current.row-1][game.cell.current.col] == 0 && game.cursor.dy > -game.cell.size*1.3 && game.cursor.dy < -game.cell.size*0.3 && game.cursor.dx < game.cell.size && game.cursor.dx > -game.cell.size) {
+        game.fild.scheme[game.cell.current.row-1][game.cell.current.col] = game.fild.scheme[game.cell.current.row][game.cell.current.col];
+        game.fild.scheme[game.cell.current.row][game.cell.current.col] = 0;
+        if (game.sound) {
+          game.audio.move.play();
+        }
+        if (game.time.stop == true) {
+          game.time.start();
+        }
+        game.moves++;
+      }
+    }
+
+    if (game.fild.scheme[game.cell.current.row+1]) {
+      if (game.fild.scheme[game.cell.current.row+1][game.cell.current.col] == 0 && game.cursor.dy < game.cell.size*1.3 && game.cursor.dy > game.cell.size*0.3 && game.cursor.dx < game.cell.size && game.cursor.dx > -game.cell.size) {
+        game.fild.scheme[game.cell.current.row+1][game.cell.current.col] = game.fild.scheme[game.cell.current.row][game.cell.current.col];
+        game.fild.scheme[game.cell.current.row][game.cell.current.col] = 0;
+        if (game.sound) {
+          game.audio.move.play();
+        }
+        if (game.time.stop == true) {
+          game.time.start();
+        }
+        game.moves++;
+      }
+    }
+
+    if (game.over()) {
+      game.results.check();
+      alert('Hooray! You solved the' + game.fild.size + 'X' + game.fild.size + ' puzzle in ' + game.time.time + ' and ' + game.moves + ' moves!');
+      game.shuffle();
+    }
+
+
+
+
+    if (game.cursor.dx >= -game.cell.size * 0.3 && game.cursor.dx <= game.cell.size * 0.3 && game.cursor.dy >= -game.cell.size * 0.3 && game.cursor.dy <= game.cell.size * 0.3) {
+    game.move(e);
+    }
+    
+    game.cell.dragAndDrop = true;
+    game.cursor.x = undefined;
+    game.cursor.y = undefined;
+    game.cursor.dx = 0;
+    game.cursor.dy = 0;
+    game.cell.current.col = undefined;
+    game.cell.current.row = undefined;
+    game.cell.current.val = undefined;
+  }
 }
 game.init();
 
